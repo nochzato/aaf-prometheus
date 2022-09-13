@@ -6,21 +6,35 @@ import (
 )
 
 func karatsuba(x *big.Int, y *big.Int) *big.Int {
-	length := big.NewInt(int64(len(x.Text(10))))
+	if len(x.Text(10)) == 1 && len(y.Text(10)) == 1 {
+		return big.NewInt(0).Mul(x, y)
+	}
+
+	length := new(big.Int)
+
+	if len(x.Text(10)) > len(y.Text(10)) {
+		length = big.NewInt(int64(len(x.Text(10))))
+	} else {
+		length = big.NewInt(int64(len(y.Text(10))))
+	}
+
 	piece_length := new(big.Int)
-	piece_length.Div(length, big.NewInt(2))
+	piece_length.Div(big.NewInt(0).Add(length, big.NewInt(1)), big.NewInt(2))
 	exp := new(big.Int)
 	exp.Exp(big.NewInt(10), piece_length, big.NewInt(0))
+
 	a, b, c, d := new(big.Int), new(big.Int), new(big.Int), new(big.Int)
 	a.Div(x, exp)
 	b.Mod(x, exp)
 	c.Div(y, exp)
 	d.Mod(y, exp)
+
 	ac, bd, abcd, adbc := new(big.Int), new(big.Int), new(big.Int), new(big.Int)
-	ac.Mul(a, c)
-	bd.Mul(b, d)
-	abcd.Mul(big.NewInt(0).Add(a, b), big.NewInt(0).Add(c, d))
+	ac = karatsuba(a, c)
+	bd = karatsuba(b, d)
+	abcd = karatsuba(big.NewInt(0).Add(a, b), big.NewInt(0).Add(c, d))
 	adbc.Sub(big.NewInt(0).Sub(abcd, ac), bd)
+
 	ans := new(big.Int)
 	ans.Add(big.NewInt(0).Add(big.NewInt(0).Mul(big.NewInt(0).Exp(big.NewInt(10), length, big.NewInt(0)), ac), big.NewInt(0).Mul(exp, adbc)), bd)
 	return ans
